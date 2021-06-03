@@ -1,0 +1,5 @@
+# Dependency directories
+serverless/.serverless
+pedirPizzasSLS/.serverless
+pedirPizzasSLS/node_modules
+pedirPizzasSLS/.vscode

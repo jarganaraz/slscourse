@@ -1,0 +1,22 @@
+{
+  "name": "pedirPizzasSLS",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "start": "serverless offline -s dev",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serverless": "sls offline"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.904.0",
+    "serverless": "^2.41.1",
+    "serverless-offline": "^7.0.0"
+  }
+}

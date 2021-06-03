@@ -1,0 +1,91 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: pedirPizzas
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  lambdaHashingVersion: 20201221
+  environment:
+    REGION: ${opt:region, self:provider.region}
+    PENDING_ORDER_QUEUE:
+      Ref: PendingOrdersQueue
+    PENDING_ORDER_QUEUE_NAME: PendingOrdersQueue
+    COMPLETED_ORDER_TABLE: CompletedOrderTable
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource: arn:aws:sqs:${self:provider.region}:*:${self:provider.environment.PENDING_ORDER_QUEUE_NAME}
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.COMPLETED_ORDER_TABLE}
+
+
+functions:
+  hacerPedido:
+    handler: handler.hacerPedido
+    events:
+      - http:
+          method: post
+          path: pedido
+  prepararPedido:
+    handler: handler.prepararPedido
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt: 
+              - PendingOrdersQueue
+              - Arn
+          batchSize: 1
+
+resources:
+  Resources:
+      PendingOrdersQueue:
+        Type: AWS::SQS::Queue
+        Properties:
+          QueueName: PendingOrdersQueue
+      CompletedOrdersTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: ${self:provider.environment.COMPLETED_ORDER_TABLE}
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+          AttributeDefinitions:
+            - AttributeName: orderId
+              AttributeType: S
+          KeySchema:
+            - AttributeName: orderId
+              KeyType: HASH
+        
+plugins:
+  - serverless-offline
+
+  # Type: "AWS::SQS::Queue"
+  #       Properties:
+  #         QueueName: "PendingOrdersQueue"
